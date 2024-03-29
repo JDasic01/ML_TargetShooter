@@ -1,5 +1,5 @@
 # Target Shooter 
-- [ ] **Mouth Recognition**
+- [x] **Mouth Recognition**
 - [ ] **Distance Recognition**
 - [ ] **Arduino Stepper Motor Control**
 - [ ] **Laser aim**
