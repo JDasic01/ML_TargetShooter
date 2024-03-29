@@ -1,5 +1,6 @@
 # Target Shooter 
 - [x] **Mouth Recognition**
+  - [ ] sometimes eye is found instead of mouth, change to only register bottom half of face 
 - [ ] **Distance Recognition**
   - [x] add a step to recognize persons hand
   - [x] after hand is recognized, call face_and_mouth function
