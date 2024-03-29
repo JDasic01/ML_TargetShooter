@@ -1,102 +1,90 @@
 import cv2
-import time
+import math
 
-# LED colors
-LED_RED = (0, 0, 255)
-LED_YELLOW = (0, 255, 255)
-LED_GREEN = (0, 255, 0)
+# Load pre-trained face and hand cascade classifiers
+face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+mouth_cascade = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
+hand_cascade = cv2.CascadeClassifier("hand.xml")
 
-# Class for face and mouth detection
-class FaceDetector:
-    def __init__(self, face_cascade_path, mouth_cascade_path):
-        self.face_cascade = cv2.CascadeClassifier(face_cascade_path)
-        self.mouth_cascade = cv2.CascadeClassifier(mouth_cascade_path)
+# Known distance from camera to face (in centimeters)
+known_distance_cm = 76.2
 
-    def detect_mouth(self, img):
-        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray_image, 1.3, 5)
+# Width of the face in the real world (in centimeters)
+known_width_cm = 14.3
+
+# Function to calculate focal length
+def calculate_focal_length(measured_distance, real_width, width_in_image):
+    focal_length = (width_in_image * measured_distance) / real_width
+    return focal_length
+
+# Function to calculate distance from camera to object
+def calculate_distance(focal_length, real_width, width_in_image):
+    distance = (real_width * focal_length) / width_in_image
+    return distance
+
+# Function to detect face and calculate distance
+def detect_face_and_calculate_distance(image, focal_length):
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray_image, 1.3, 5)
+
+    for (x, y, w, h) in faces:
+        # Draw rectangle only around the mouth
+        mouth_gray = gray_image[y:y+h, x:x+w]
+        mouths = mouth_cascade.detectMultiScale(mouth_gray, 1.5, 11)
+        for (mx, my, mw, mh) in mouths:
+            cv2.rectangle(image, (x + mx, y + my), (x + mx + mw, y + my + mh), (0, 255, 0), 2)
+            # Calculate distance to face
+            face_width_in_image = w
+            distance_cm = calculate_distance(focal_length, known_width_cm, face_width_in_image)
+            # Display distance on the image
+            cv2.putText(image, f"Face Distance: {round(distance_cm, 2)} cm", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            # Print mouth coordinates
+            mouth_x, mouth_y = x + mx + mw // 2, y + my + mh // 2
+            cv2.putText(image, f"Mouth: ({mouth_x}, {mouth_y})", (x, y - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         
-        for (x, y, w, h) in faces:
-            roi_gray = gray_image[y:y+h, x:x+w]
-            roi_color = img[y:y+h, x:x+w]
+    return image
 
-            # Detect mouth within the face ROI
-            mouths = self.mouth_cascade.detectMultiScale(roi_gray, 1.5, 11)
-            for (mx, my, mw, mh) in mouths:
-                cv2.rectangle(roi_color, (mx, my), (mx + mw, my + mh), (255, 0, 0), 2)
-        
-        return img
+# Function to detect hands and draw rectangles
+def detect_hands(image):
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    hands = hand_cascade.detectMultiScale(gray_image, 1.3, 5)
+    for (x, y, w, h) in hands:
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 0, 255), 2)
+    return image
 
-# Class for hand detection
-class HandDetector:
-    def __init__(self, cascade_path):
-        self.hand_cascade = cv2.CascadeClassifier(cascade_path)
-        
-    def find_hands(self, img, draw=True):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        hands = self.hand_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        
-        if draw:
-            for (x, y, w, h) in hands:
-                cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                
-        return img
+# Read reference image to calculate focal length
+ref_image = cv2.imread("Ref_image.png")
+ref_image_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
+ref_faces = face_cascade.detectMultiScale(ref_image_gray, 1.3, 5)
+if len(ref_faces) > 0:
+    ref_face_width = ref_faces[0][2]
+    focal_length_found = calculate_focal_length(known_distance_cm, known_width_cm, ref_face_width)
+else:
+    focal_length_found = None
 
-    def find_hand_positions(self, img, draw=True):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        hands = self.hand_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+# Initialize video capture
+cap = cv2.VideoCapture(0)
+hand_detected = False
 
-        hand_positions = []
-        for (x, y, w, h) in hands:
-            cx, cy = x + w // 2, y + h // 2
-            hand_positions.append([cx, cy])
-            if draw:
-                cv2.circle(img, (cx, cy), 5, (255, 0, 255), cv2.FILLED)
-                
-        return hand_positions
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-# Function to check if LED is supported and set its color
-def set_led_color(color):
-    # Here you can add code to control the LED color
-    # This function is a placeholder to illustrate the concept
-    print(f"LED color set to: {color}")
+    if focal_length_found is not None:
+        if not hand_detected:
+            frame = detect_hands(frame)
+            gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            hands = hand_cascade.detectMultiScale(gray_image, 1.3, 5)
+            if len(hands) > 0:
+                hand_detected = True
 
-# Main function
-def main():
-    # Initialize video capture
-    cap = cv2.VideoCapture(0)
-    # Initialize face and hand detectors
-    face_detector = FaceDetector('./haarcascade_frontalface_default.xml', './haarcascade_mcs_mouth.xml')
-    hand_detector = HandDetector('./hand.xml')
-    # Set LED color to red (indicating startup)
-    set_led_color(LED_RED)
-    # Variable to track if hand is found
-    hand_found = False
+        if hand_detected:
+            frame = detect_face_and_calculate_distance(frame, focal_length_found)
 
-    while True:
-        success, img = cap.read()
+    cv2.imshow("Distance and Hand Detection", frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
-        # If hand is not found yet, search for hands
-        if not hand_found:
-            img = hand_detector.find_hands(img, draw=False)
-            hand_positions = hand_detector.find_hand_positions(img, draw=False)
-            if len(hand_positions) > 0:
-                # Hand is found, set LED color to yellow
-                set_led_color(LED_YELLOW)
-                hand_found = True
-        
-        # If hand is found, start mouth detection
-        if hand_found:
-            img = face_detector.detect_mouth(img)
-            # If mouth is detected, set LED color to green
-            set_led_color(LED_GREEN)
-
-        cv2.imshow("Image", img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
-if __name__ == "__main__":
-    main()
+cap.release()
+cv2.destroyAllWindows()
