@@ -1,7 +1,11 @@
 # Target Shooter 
 - [x] **Mouth Recognition**
 - [ ] **Distance Recognition**
+  - [ ] add a step to recognize persons hand
+  - [ ] after hand is recognized, call face_and_mouth function
+  - [ ] pass distance and postition data to arduino over serial port(should work on rpi zero w)
 - [ ] **Arduino Stepper Motor Control**
+  - [ ] basic test of stepper motors
 - [ ] **Laser aim**
 - [ ] **Piezo aim and shooting**
 - [ ] **3D shooter model**
