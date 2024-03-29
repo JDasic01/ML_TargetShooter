@@ -1,5 +1,12 @@
 import cv2
+import time
 
+# LED colors
+LED_RED = (0, 0, 255)
+LED_YELLOW = (0, 255, 255)
+LED_GREEN = (0, 255, 0)
+
+# Class for face and mouth detection
 class FaceDetector:
     def __init__(self, face_cascade_path, mouth_cascade_path):
         self.face_cascade = cv2.CascadeClassifier(face_cascade_path)
@@ -20,6 +27,7 @@ class FaceDetector:
         
         return img
 
+# Class for hand detection
 class HandDetector:
     def __init__(self, cascade_path):
         self.hand_cascade = cv2.CascadeClassifier(cascade_path)
@@ -47,23 +55,41 @@ class HandDetector:
                 
         return hand_positions
 
+# Function to check if LED is supported and set its color
+def set_led_color(color):
+    # Here you can add code to control the LED color
+    # This function is a placeholder to illustrate the concept
+    print(f"LED color set to: {color}")
+
+# Main function
 def main():
+    # Initialize video capture
     cap = cv2.VideoCapture(0)
+    # Initialize face and hand detectors
     face_detector = FaceDetector('./haarcascade_frontalface_default.xml', './haarcascade_mcs_mouth.xml')
     hand_detector = HandDetector('./hand.xml')
-    mouth_found = False
+    # Set LED color to red (indicating startup)
+    set_led_color(LED_RED)
+    # Variable to track if hand is found
+    hand_found = False
 
     while True:
         success, img = cap.read()
 
-        if not mouth_found:
+        # If hand is not found yet, search for hands
+        if not hand_found:
             img = hand_detector.find_hands(img, draw=False)
             hand_positions = hand_detector.find_hand_positions(img, draw=False)
             if len(hand_positions) > 0:
-                mouth_found = True
+                # Hand is found, set LED color to yellow
+                set_led_color(LED_YELLOW)
+                hand_found = True
         
-        if mouth_found:
+        # If hand is found, start mouth detection
+        if hand_found:
             img = face_detector.detect_mouth(img)
+            # If mouth is detected, set LED color to green
+            set_led_color(LED_GREEN)
 
         cv2.imshow("Image", img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
