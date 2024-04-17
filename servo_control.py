@@ -1,67 +1,36 @@
 import RPi.GPIO as GPIO
 import time
 
-# Define GPIO pins for servo motors
-SERVO_UP_DOWN_PIN = 18
-SERVO_LEFT_RIGHT_PIN = 17
-
-# Set the GPIO mode and pin numbering
+# Set GPIO mode
 GPIO.setmode(GPIO.BCM)
 
-# Set up GPIO pins for servo motors
-GPIO.setup(SERVO_UP_DOWN_PIN, GPIO.OUT)
-GPIO.setup(SERVO_LEFT_RIGHT_PIN, GPIO.OUT)
+# Set pin numbers for controlling the DC motor
+left_pin = 17  # Pin to turn the motor left
+right_pin = 27 # Pin to turn the motor right
 
-# Set up PWM for servo motors
-servo_up_down = GPIO.PWM(SERVO_UP_DOWN_PIN, 50)  # 50 Hz frequency
-servo_left_right = GPIO.PWM(SERVO_LEFT_RIGHT_PIN, 50)
+# Setup DC motor pins
+GPIO.setup(left_pin, GPIO.OUT)
+GPIO.setup(right_pin, GPIO.OUT)
 
-# Start PWM with 0% duty cycle
-servo_up_down.start(0)
-servo_left_right.start(0)
+# Function to turn the motor left for a specified duration
+def turn_left(duration):
+    GPIO.output(left_pin, GPIO.HIGH)  # Turn left pin on
+    time.sleep(duration)              # Wait for the specified duration
+    GPIO.output(left_pin, GPIO.LOW)   # Turn left pin off
 
-# Function to move servo motors based on mouth coordinates
-def move_servos(mouth_x, mouth_y):
-    # Convert mouth coordinates to servo angles
-    up_down_angle = 90 - (mouth_y * 90 / 500)  # Adjust as needed
-    left_right_angle = 90 + (mouth_x * 90 / 500)  # Adjust as needed
-    
-    # Map angles to duty cycles
-    up_down_duty = (up_down_angle / 180.0) * 10 + 2.5
-    left_right_duty = (left_right_angle / 180.0) * 10 + 2.5
-    
-    # Change PWM duty cycles to move servos
-    servo_up_down.ChangeDutyCycle(up_down_duty)
-    servo_left_right.ChangeDutyCycle(left_right_duty)
-    
-    time.sleep(0.5)  # Adjust as needed to control the speed of movement
+# Function to turn the motor right for a specified duration
+def turn_right(duration):
+    GPIO.output(right_pin, GPIO.HIGH) # Turn right pin on
+    time.sleep(duration)               # Wait for the specified duration
+    GPIO.output(right_pin, GPIO.LOW)  # Turn right pin off
 
-# Function to clean up GPIO
-def cleanup():
-    servo_up_down.stop()
-    servo_left_right.stop()
+try:
+    while True:
+        # Turn the motor left for 1 second
+        turn_left(1)
+        
+        # Turn the motor right for 1 second
+        turn_right(1)
+
+except KeyboardInterrupt:
     GPIO.cleanup()
-
-# Example usage:
-if __name__ == "__main__":
-    try:
-        # Move servo motors to initial position (90 degrees)
-        move_servos(90, 90)
-        time.sleep(1)  # Wait for servos to move
-        
-        # Move servo motors based on mouth coordinates (example)
-        # Replace these values with the actual mouth coordinates
-        mouth_x = 50
-        mouth_y = 50
-        
-        # Move servo motors to track mouth coordinates
-        move_servos(mouth_x, mouth_y)
-        
-        # Wait for user to press Enter before cleaning up GPIO
-        input("Press Enter to exit...")
-        
-    except KeyboardInterrupt:
-        pass
-
-    finally:
-        cleanup()
