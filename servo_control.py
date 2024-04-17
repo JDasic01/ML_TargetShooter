@@ -7,7 +7,7 @@ GPIO.setmode(GPIO.BCM)
 # Set pin numbers for controlling the DC motor
 left_pin = 17  # Pin to turn the motor left
 right_pin = 27 # Pin to turn the motor right
-
+print("setup")
 # Setup DC motor pins
 GPIO.setup(left_pin, GPIO.OUT)
 GPIO.setup(right_pin, GPIO.OUT)
@@ -27,9 +27,11 @@ def turn_right(duration):
 try:
     while True:
         # Turn the motor left for 1 second
+        print("left")
         turn_left(1)
         
         # Turn the motor right for 1 second
+        print("right")
         turn_right(1)
 
 except KeyboardInterrupt:
