@@ -40,14 +40,8 @@ def clockwise():
         setOutput(i)
         sleep(motorSpeed)
 
-def initialize_motor():
-    for _ in range(countsperrev):  # Rotate for a full revolution counterclockwise
-        anticlockwise()
-
-initialize_motor()
-
 try:
-    while True:        
+    while True:
         for _ in range(countsperrev):
             for angle in range(-90, 91, 10):
                 servo.value = angle / 90

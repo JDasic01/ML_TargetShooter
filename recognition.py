@@ -7,10 +7,10 @@ mouth_cascade = cv2.CascadeClassifier("haarcascade_mcs_mouth.xml")
 hand_cascade = cv2.CascadeClassifier("hand.xml")
 
 # Known distance from camera to face (in centimeters)
-known_distance_cm = 76.2
+KNOWN_DISTANCE_CM = 76.2
 
 # Width of the face in the real world (in centimeters)
-known_width_cm = 14.3
+KNOWN_WIDTH_CM = 14.3
 
 # Function to calculate focal length
 def calculate_focal_length(measured_distance, real_width, width_in_image):
@@ -35,7 +35,7 @@ def detect_face_and_calculate_distance(image, focal_length):
             cv2.rectangle(image, (x + mx, y + my), (x + mx + mw, y + my + mh), (0, 255, 0), 2)
             # Calculate distance to face
             face_width_in_image = w
-            distance_cm = calculate_distance(focal_length, known_width_cm, face_width_in_image)
+            distance_cm = calculate_distance(focal_length, KNOWN_WIDTH_CM, face_width_in_image)
             # Display distance on the image
             cv2.putText(image, f"Face Distance: {round(distance_cm, 2)} cm", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             # Print mouth coordinates
@@ -58,7 +58,7 @@ ref_image_gray = cv2.cvtColor(ref_image, cv2.COLOR_BGR2GRAY)
 ref_faces = face_cascade.detectMultiScale(ref_image_gray, 1.3, 5)
 if len(ref_faces) > 0:
     ref_face_width = ref_faces[0][2]
-    focal_length_found = calculate_focal_length(known_distance_cm, known_width_cm, ref_face_width)
+    focal_length_found = calculate_focal_length(KNOWN_DISTANCE_CM, KNOWN_WIDTH_CM, ref_face_width)
 else:
     focal_length_found = None
 
