@@ -40,11 +40,13 @@ def clockwise():
         setOutput(i)
         sleep(motorSpeed)
 
-def initialize_motor():
-    for _ in range(countsperrev):  # Rotate for a full revolution counterclockwise
-        anticlockwise()
+def set_starting_position():
+    # Rotate the stepper motor to the desired starting position
+    for _ in range(starting_position_steps):
+        clockwise()  
 
-initialize_motor()
+starting_position_steps = int(input("number of steps: "))  
+set_starting_position()
 
 try:
     while True:        
