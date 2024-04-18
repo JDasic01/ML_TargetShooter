@@ -42,21 +42,22 @@ def clockwise():
 
 try:
     while True:
-        # Move servo from min to max
-        for angle in range(-90, 91, 10):
-            servo.value = angle / 90
-            sleep(0.1)
-        
-        # Move stepper motor clockwise
         for _ in range(countsperrev):
+            for angle in range(-90, 91, 10):
+                servo.value = angle / 90
+                sleep(0.1)
+            for angle in range(91, -90, 10):
+                servo.value = angle / 90
+                sleep(0.1)    
             clockwise()
         
-        # Move servo back to min
-        servo.min()
-        sleep(1)
-        
-        # Move stepper motor anticlockwise
         for _ in range(countsperrev):
+            for angle in range(-90, 91, 10):
+                servo.value = angle / 90
+                sleep(0.1)
+            for angle in range(91, -90, 10):
+                servo.value = angle / 90
+                sleep(0.1)    
             anticlockwise()
         
         count += 1
