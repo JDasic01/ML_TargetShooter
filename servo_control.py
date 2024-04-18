@@ -1,34 +1,20 @@
 from gpiozero import Servo
 from time import sleep
-
-servo = Servo(12)
-
-print("middle")
-servo.mid()
-sleep(5)
-print("max")
-servo.max()
-sleep(5)
-print("min")
-servo.min()
-sleep(5)
-print("middle")
-servo.mid()
-sleep(5)
-servo.value = None;
-
 import RPi.GPIO as GPIO
 
-# Define GPIO pins
+# Servo setup
+servo = Servo(12)
+
+# Define GPIO pins for stepper motor
 motorPin1 = 8  # Blue - 28BYJ48 pin 1
 motorPin2 = 7  # Pink - 28BYJ48 pin 2
-motorPin3 = 25 # Yellow - 28BYJ48 pin 3
+motorPin3 = 25  # Yellow - 28BYJ48 pin 3
 motorPin4 = 1  # Orange - 28BYJ48 pin 4
 
 # Define motor speed and other variables
 motorSpeed = 0.0012  # variable to set stepper speed in seconds (equivalent to 1200 microseconds)
-count = 0             # count of steps made
-countsperrev = 512    # number of steps per full revolution
+count = 0  # count of steps made
+countsperrev = 512  # number of steps per full revolution
 lookup = [0b01000, 0b01100, 0b00100, 0b00110, 0b00010, 0b00011, 0b00001, 0b01001]
 
 # Setup GPIO
@@ -56,13 +42,24 @@ def clockwise():
 
 try:
     while True:
-        if count < countsperrev:
+        # Move servo from min to max
+        for angle in range(-90, 91, 10):
+            servo.value = angle / 90
+            sleep(0.1)
+        
+        # Move stepper motor clockwise
+        for _ in range(countsperrev):
             clockwise()
-        elif count == countsperrev * 2:
-            count = 0
-        else:
+        
+        # Move servo back to min
+        servo.min()
+        sleep(1)
+        
+        # Move stepper motor anticlockwise
+        for _ in range(countsperrev):
             anticlockwise()
+        
         count += 1
-
+        
 except KeyboardInterrupt:
     GPIO.cleanup()
