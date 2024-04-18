@@ -14,7 +14,7 @@ motorPin4 = 1  # Orange - 28BYJ48 pin 4
 # Define motor speed and other variables
 motorSpeed = 0.0012  # variable to set stepper speed in seconds (equivalent to 1200 microseconds)
 count = 0  # count of steps made
-countsperrev = 200  # number of steps per full revolution
+countsperrev = 100  # number of steps per full revolution
 lookup = [0b01000, 0b01100, 0b00100, 0b00110, 0b00010, 0b00011, 0b00001, 0b01001]
 
 # Setup GPIO
@@ -40,27 +40,19 @@ def clockwise():
         setOutput(i)
         sleep(motorSpeed)
 
-try:
-    while True:        
-        for _ in range(countsperrev):
-            for angle in range(-90, 91, 10):
-                servo.value = angle / 90
-                sleep(0.1)
-            for angle in range(91, -90, 10):
-                servo.value = angle / 90
-                sleep(0.1)    
-            clockwise()
+
+for _ in range(countsperrev):
+    for angle in range(-90, 91, 10):
+        servo.value = angle / 90
+    for angle in range(91, -90, 10):
+        servo.value = angle / 90
+    clockwise()
+
+for _ in range(countsperrev):
+    for angle in range(-90, 91, 10):
+        servo.value = angle / 90
+    for angle in range(91, -90, 10):
+        servo.value = angle / 90
+    anticlockwise()
         
-        for _ in range(countsperrev):
-            for angle in range(-90, 91, 10):
-                servo.value = angle / 90
-                sleep(0.1)
-            for angle in range(91, -90, 10):
-                servo.value = angle / 90
-                sleep(0.1)    
-            anticlockwise()
-        
-        count += 1
-        
-except KeyboardInterrupt:
-    GPIO.cleanup()
+
