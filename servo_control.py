@@ -1,38 +1,18 @@
-import RPi.GPIO as GPIO
-import time
+from gpiozero import Servo
+from time import sleep
 
-# Set GPIO mode
-GPIO.setmode(GPIO.BCM)
+servo = Servo(12)
 
-# Set pin numbers for controlling the DC motor
-left_pin = 17  # Pin to turn the motor left
-right_pin = 27 # Pin to turn the motor right
-print("setup")
-# Setup DC motor pins
-GPIO.setup(left_pin, GPIO.OUT)
-GPIO.setup(right_pin, GPIO.OUT)
-
-# Function to turn the motor left for a specified duration
-def turn_left(duration):
-    GPIO.output(left_pin, GPIO.HIGH)  # Turn left pin on
-    time.sleep(duration)              # Wait for the specified duration
-    GPIO.output(left_pin, GPIO.LOW)   # Turn left pin off
-
-# Function to turn the motor right for a specified duration
-def turn_right(duration):
-    GPIO.output(right_pin, GPIO.HIGH) # Turn right pin on
-    time.sleep(duration)               # Wait for the specified duration
-    GPIO.output(right_pin, GPIO.LOW)  # Turn right pin off
-
-try:
-    while True:
-        # Turn the motor left for 1 second
-        print("left")
-        turn_left(1)
-        
-        # Turn the motor right for 1 second
-        print("right")
-        turn_right(1)
-
-except KeyboardInterrupt:
-    GPIO.cleanup()
+print("middle")
+servo.mid()
+sleep(5)
+print("max")
+servo.max()
+sleep(5)
+print("min")
+servo.min()
+sleep(5)
+print("middle")
+servo.mid()
+sleep(5)
+servo.value = None;
