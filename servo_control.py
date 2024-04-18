@@ -14,7 +14,7 @@ motorPin4 = 1  # Orange - 28BYJ48 pin 4
 # Define motor speed and other variables
 motorSpeed = 0.0012  # variable to set stepper speed in seconds (equivalent to 1200 microseconds)
 count = 0  # count of steps made
-countsperrev = 512  # number of steps per full revolution
+countsperrev = 200  # number of steps per full revolution
 lookup = [0b01000, 0b01100, 0b00100, 0b00110, 0b00010, 0b00011, 0b00001, 0b01001]
 
 # Setup GPIO
@@ -45,7 +45,7 @@ def set_starting_position():
     for _ in range(starting_position_steps):
         clockwise()  
 
-starting_position_steps = int(input("number of steps: "))  
+starting_position_steps = int(input("number of steps:"))  
 set_starting_position()
 
 try:
